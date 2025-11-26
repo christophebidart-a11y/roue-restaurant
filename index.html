@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎡 Roue des Restaurants</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎡</text></svg>">
     <style>
         * {
             margin: 0;
@@ -23,7 +24,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             width: 100%;
         }
 
@@ -35,23 +36,10 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 968px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .wheel-section {
             background: white;
             border-radius: 20px;
-            padding: 30px;
+            padding: 40px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
@@ -75,6 +63,24 @@
             gap: 5px;
         }
 
+        .filter-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
         .sound-toggle {
             padding: 12px 20px;
             border: none;
@@ -95,29 +101,20 @@
             opacity: 0.4;
         }
 
-        .filter-btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 50px;
-            background: transparent;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-            color: #666;
-        }
-
-        .filter-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
         .wheel-container {
             position: relative;
             width: 500px;
             height: 500px;
             margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .wheel-container {
+                width: 90vw;
+                height: 90vw;
+                max-width: 400px;
+                max-height: 400px;
+            }
         }
 
         #wheelCanvas {
@@ -206,225 +203,6 @@
             opacity: 1;
         }
 
-        .management-section {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-
-        .management-section h2 {
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-
-        .restaurant-list {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .restaurant-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-        }
-
-        .restaurant-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-        .restaurant-info {
-            flex: 1;
-        }
-
-        .restaurant-name {
-            font-weight: bold;
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .restaurant-details {
-            font-size: 13px;
-            color: #666;
-        }
-
-        .restaurant-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            margin-right: 8px;
-            font-weight: 600;
-        }
-
-        .badge-fast {
-            background: #4ecdc4;
-            color: white;
-        }
-
-        .badge-slow {
-            background: #ffe66d;
-            color: #333;
-        }
-
-        .restaurant-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .btn-small {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
-        }
-
-        .btn-edit {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-delete {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .btn-small:hover {
-            transform: scale(1.05);
-            opacity: 0.9;
-        }
-
-        .add-btn {
-            width: 100%;
-            padding: 15px;
-            background: #51cf66;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .add-btn:hover {
-            background: #40c057;
-            transform: translateY(-2px);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .modal-content h3 {
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .weight-display {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .weight-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #667eea;
-            min-width: 30px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .modal-btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-
         .confetti {
             position: fixed;
             width: 10px;
@@ -439,17 +217,6 @@
                 transform: translateY(100vh) rotate(360deg);
                 opacity: 0;
             }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
         }
 
         .image-overlay {
@@ -541,73 +308,27 @@
     <div class="container">
         <h1>🎡 Roue des Restaurants</h1>
         
-        <div class="main-content">
-            <div class="wheel-section">
-                <div class="filter-section">
-                    <div class="filter-toggle">
-                        <button class="filter-btn active" data-filter="all">Tous</button>
-                        <button class="filter-btn" data-filter="fast">Rapide ⚡</button>
-                        <button class="filter-btn" data-filter="slow">Lent 🍽️</button>
-                    </div>
-                    <button class="sound-toggle" id="soundToggle" title="Activer/Désactiver les sons">
-                        🔊
-                    </button>
+        <div class="wheel-section">
+            <div class="filter-section">
+                <div class="filter-toggle">
+                    <button class="filter-btn active" data-filter="all">Tous</button>
+                    <button class="filter-btn" data-filter="fast">Rapide ⚡</button>
+                    <button class="filter-btn" data-filter="slow">Lent 🍽️</button>
                 </div>
-
-                <div class="wheel-container">
-                    <div class="wheel-pointer"></div>
-                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
-                    <div class="wheel-center">SPIN</div>
-                </div>
-
-                <button class="spin-btn" id="spinBtn">🎲 Lancer la roue !</button>
-                
-                <div class="result-display" id="resultDisplay"></div>
+                <button class="sound-toggle" id="soundToggle" title="Activer/Désactiver les sons">
+                    🔊
+                </button>
             </div>
 
-            <div class="management-section">
-                <h2>📝 Gérer les restaurants</h2>
-                <div class="restaurant-list" id="restaurantList"></div>
-                <button class="add-btn" id="addBtn">➕ Ajouter un restaurant</button>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                <div class="wheel-center">SPIN</div>
             </div>
-        </div>
-    </div>
 
-    <!-- Modal -->
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Ajouter un restaurant</h3>
-            <form id="restaurantForm">
-                <div class="form-group">
-                    <label>Nom du restaurant</label>
-                    <input type="text" id="restaurantName" required placeholder="Ex: Le Petit Bistrot">
-                </div>
-                <div class="form-group">
-                    <label>Poids (1-10) - Plus élevé = plus de chances</label>
-                    <div class="weight-display">
-                        <input type="range" id="restaurantWeight" min="1" max="10" value="5">
-                        <span class="weight-value" id="weightValue">5</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Catégorie</label>
-                    <select id="restaurantCategory" required>
-                        <option value="fast">Rapide ⚡ (service rapide)</option>
-                        <option value="slow">Lent 🍽️ (prendre son temps)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Image/GIF (facultatif) 🎨</label>
-                    <input type="url" id="restaurantImage" placeholder="https://exemple.com/image.gif">
-                    <small style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
-                        URL d'une image ou GIF à afficher quand ce restaurant est choisi
-                    </small>
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="modal-btn btn-primary">Enregistrer</button>
-                    <button type="button" class="modal-btn btn-secondary" id="cancelBtn">Annuler</button>
-                </div>
-            </form>
+            <button class="spin-btn" id="spinBtn">🎲 Lancer la roue !</button>
+            
+            <div class="result-display" id="resultDisplay"></div>
         </div>
     </div>
 
@@ -621,11 +342,35 @@
     </div>
 
     <script>
-        // Data management
-        let restaurants = [];
+        // Data - Liste des restaurants
+        const restaurants = [
+            { "name": "Woodblock", "weight": 6, "category": "fast", "image": "https://media.tenor.com/yf3ROvNAOpAAAAAM/hhgf.gif" },
+            { "name": "NAZIK", "weight": 6, "category": "fast", "image": "" },
+            { "name": "Tajinier", "weight": 4, "category": "slow", "image": "" },
+            { "name": "Eurasie", "weight": 7, "category": "fast", "image": "" },
+            { "name": "Mimosa", "weight": 7, "category": "fast", "image": "" },
+            { "name": "KFC", "weight": 5, "category": "fast", "image": "" },
+            { "name": "Chourrasco", "weight": 6, "category": "fast", "image": "" },
+            { "name": "Umiyama", "weight": 8, "category": "fast", "image": "" },
+            { "name": "Kobbo", "weight": 7, "category": "slow", "image": "" },
+            { "name": "Brasserie du M", "weight": 8, "category": "slow", "image": "" },
+            { "name": "Quick", "weight": 5, "category": "fast", "image": "" },
+            { "name": "Burger King", "weight": 6, "category": "fast", "image": "" },
+            { "name": "Brasserie Le Cap", "weight": 6, "category": "slow", "image": "" },
+            { "name": "Dozo", "weight": 9, "category": "slow", "image": "" },
+            { "name": "Au bureau", "weight": 6, "category": "fast", "image": "" },
+            { "name": "Oceanic", "weight": 6, "category": "slow", "image": "" },
+            { "name": "Ciao A Tutti", "weight": 8, "category": "slow", "image": "" },
+            { "name": "Bec fin", "weight": 5, "category": "slow", "image": "" },
+            { "name": "Flunch", "weight": 2, "category": "slow", "image": "" },
+            { "name": "Burger Decat", "weight": 6, "category": "fast", "image": "" },
+            { "name": "Nobi Nobi", "weight": 6, "category": "fast", "image": "" },
+            { "name": "Crepes carrouf", "weight": 4, "category": "slow", "image": "" },
+            { "name": "Le camion du jour Cultura", "weight": 3, "category": "fast", "image": "" }
+        ];
+
         let currentFilter = 'all';
         let isSpinning = false;
-        let editingIndex = null;
 
         // Canvas setup
         const canvas = document.getElementById('wheelCanvas');
@@ -635,7 +380,9 @@
         // Colors
         const colors = [
             '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'
+            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788',
+            '#E74C3C', '#3498DB', '#2ECC71', '#F39C12', '#9B59B6',
+            '#1ABC9C', '#E67E22', '#95A5A6', '#34495E', '#D35400'
         ];
 
         // Sound management
@@ -764,36 +511,6 @@
                     btn.classList.add('muted');
                 }
             }
-        }
-
-        // Load data
-        function loadRestaurants() {
-            const saved = localStorage.getItem('restaurants');
-            if (saved) {
-                restaurants = JSON.parse(saved);
-                // Migration: ajouter le champ image si manquant
-                restaurants = restaurants.map(r => ({
-                    name: r.name || '',
-                    weight: r.weight || 5,
-                    category: r.category || 'fast',
-                    image: r.image || ''
-                }));
-                saveRestaurants(); // Sauvegarder avec les nouveaux champs
-            } else {
-                // Exemples par défaut
-                restaurants = [
-                    { name: 'Le Bistrot', weight: 7, category: 'fast', image: '' },
-                    { name: 'Sushi Zen', weight: 8, category: 'slow', image: '' },
-                    { name: 'Burger King', weight: 5, category: 'fast', image: '' },
-                    { name: 'La Trattoria', weight: 6, category: 'slow', image: '' },
-                    { name: 'Kebab Express', weight: 4, category: 'fast', image: '' }
-                ];
-                saveRestaurants();
-            }
-        }
-
-        function saveRestaurants() {
-            localStorage.setItem('restaurants', JSON.stringify(restaurants));
         }
 
         function getFilteredRestaurants() {
@@ -1016,135 +733,8 @@
             }
         }
 
-        // UI Management
-        function renderRestaurantList() {
-            try {
-                const list = document.getElementById('restaurantList');
-                
-                if (restaurants.length === 0) {
-                    list.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🍽️</div>
-                            <p>Aucun restaurant pour le moment</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                list.innerHTML = restaurants.map((r, index) => {
-                    const name = r.name || 'Sans nom';
-                    const weight = r.weight || 5;
-                    const category = r.category || 'fast';
-                    const hasImage = r.image && r.image.trim() !== '';
-                    
-                    return `
-                    <div class="restaurant-item">
-                        <div class="restaurant-info">
-                            <div class="restaurant-name">${name} ${hasImage ? '🖼️' : ''}</div>
-                            <div class="restaurant-details">
-                                <span class="restaurant-badge badge-${category}">
-                                    ${category === 'fast' ? '⚡ Rapide' : '🍽️ Lent'}
-                                </span>
-                                <span>Poids: ${weight}/10</span>
-                            </div>
-                        </div>
-                        <div class="restaurant-actions">
-                            <button class="btn-small btn-edit" onclick="editRestaurant(${index})">✏️</button>
-                            <button class="btn-small btn-delete" onclick="deleteRestaurant(${index})">🗑️</button>
-                        </div>
-                    </div>
-                `;
-                }).join('');
-            } catch (error) {
-                console.error('Erreur dans renderRestaurantList:', error);
-            }
-        }
-
-        function showModal(isEdit = false, index = null) {
-            try {
-                const modal = document.getElementById('modal');
-                const form = document.getElementById('restaurantForm');
-                const title = document.getElementById('modalTitle');
-                
-                editingIndex = index;
-                title.textContent = isEdit ? 'Modifier le restaurant' : 'Ajouter un restaurant';
-                
-                if (isEdit && index !== null && restaurants[index]) {
-                    const restaurant = restaurants[index];
-                    document.getElementById('restaurantName').value = restaurant.name || '';
-                    document.getElementById('restaurantWeight').value = restaurant.weight || 5;
-                    document.getElementById('weightValue').textContent = restaurant.weight || 5;
-                    document.getElementById('restaurantCategory').value = restaurant.category || 'fast';
-                    document.getElementById('restaurantImage').value = restaurant.image || '';
-                } else {
-                    form.reset();
-                    document.getElementById('weightValue').textContent = '5';
-                }
-                
-                modal.classList.add('show');
-            } catch (error) {
-                console.error('Erreur dans showModal:', error);
-            }
-        }
-
-        function hideModal() {
-            document.getElementById('modal').classList.remove('show');
-            editingIndex = null;
-        }
-
-        function editRestaurant(index) {
-            try {
-                if (index >= 0 && index < restaurants.length) {
-                    showModal(true, index);
-                }
-            } catch (error) {
-                console.error('Erreur dans editRestaurant:', error);
-            }
-        }
-
-        function deleteRestaurant(index) {
-            try {
-                if (index >= 0 && index < restaurants.length && confirm('Supprimer ce restaurant ?')) {
-                    restaurants.splice(index, 1);
-                    saveRestaurants();
-                    renderRestaurantList();
-                    drawWheel();
-                }
-            } catch (error) {
-                console.error('Erreur dans deleteRestaurant:', error);
-            }
-        }
-
         // Event listeners
         document.getElementById('spinBtn').addEventListener('click', spinWheel);
-        document.getElementById('addBtn').addEventListener('click', () => showModal(false));
-        document.getElementById('cancelBtn').addEventListener('click', hideModal);
-
-        document.getElementById('restaurantWeight').addEventListener('input', (e) => {
-            document.getElementById('weightValue').textContent = e.target.value;
-        });
-
-        document.getElementById('restaurantForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const restaurant = {
-                name: document.getElementById('restaurantName').value,
-                weight: parseInt(document.getElementById('restaurantWeight').value),
-                category: document.getElementById('restaurantCategory').value,
-                image: document.getElementById('restaurantImage').value || ''
-            };
-
-            if (editingIndex !== null) {
-                restaurants[editingIndex] = restaurant;
-            } else {
-                restaurants.push(restaurant);
-            }
-
-            saveRestaurants();
-            renderRestaurantList();
-            drawWheel();
-            hideModal();
-        });
 
         // Filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1171,8 +761,6 @@
 
         // Initialize
         loadSoundPreference();
-        loadRestaurants();
-        renderRestaurantList();
         drawWheel();
     </script>
 </body>
