@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎡 Roue des Restaurants</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .wheel-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .filter-toggle {
+            display: inline-flex;
+            background: #f0f0f0;
+            border-radius: 50px;
+            padding: 5px;
+            gap: 5px;
+        }
+
+        .sound-toggle {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .sound-toggle:hover {
+            background: #e0e0e0;
+            transform: scale(1.05);
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.4;
+        }
+
+        .filter-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 20px 0;
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #ff6b6b;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            z-index: 10;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            border: 5px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .spin-btn {
+            padding: 18px 50px;
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-display {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .result-display.show {
+            opacity: 1;
+        }
+
+        .management-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .management-section h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .restaurant-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .restaurant-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .restaurant-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .restaurant-info {
+            flex: 1;
+        }
+
+        .restaurant-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .restaurant-details {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .restaurant-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-right: 8px;
+            font-weight: 600;
+        }
+
+        .badge-fast {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .badge-slow {
+            background: #ffe66d;
+            color: #333;
+        }
+
+        .restaurant-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-small:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 15px;
+            background: #51cf66;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #40c057;
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .weight-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weight-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 30px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .image-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s;
+        }
+
+        .image-overlay.show {
+            display: flex;
+        }
+
+        .image-overlay-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            animation: zoomIn 0.5s;
+        }
+
+        .image-overlay-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-overlay-text {
+            text-align: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .image-overlay-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #333;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 2001;
+        }
+
+        .image-overlay-close:hover {
+            transform: scale(1.1) rotate(90deg);
+            background: #ff6b6b;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎡 Roue des Restaurants</h1>
+        
+        <div class="main-content">
+            <div class="wheel-section">
+                <div class="filter-section">
+                    <div class="filter-toggle">
+                        <button class="filter-btn active" data-filter="all">Tous</button>
+                        <button class="filter-btn" data-filter="fast">Rapide ⚡</button>
+                        <button class="filter-btn" data-filter="slow">Lent 🍽️</button>
+                    </div>
+                    <button class="sound-toggle" id="soundToggle" title="Activer/Désactiver les sons">
+                        🔊
+                    </button>
+                </div>
+
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                    <div class="wheel-center">SPIN</div>
+                </div>
+
+                <button class="spin-btn" id="spinBtn">🎲 Lancer la roue !</button>
+                
+                <div class="result-display" id="resultDisplay"></div>
+            </div>
+
+            <div class="management-section">
+                <h2>📝 Gérer les restaurants</h2>
+                <div class="restaurant-list" id="restaurantList"></div>
+                <button class="add-btn" id="addBtn">➕ Ajouter un restaurant</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Ajouter un restaurant</h3>
+            <form id="restaurantForm">
+                <div class="form-group">
+                    <label>Nom du restaurant</label>
+                    <input type="text" id="restaurantName" required placeholder="Ex: Le Petit Bistrot">
+                </div>
+                <div class="form-group">
+                    <label>Poids (1-10) - Plus élevé = plus de chances</label>
+                    <div class="weight-display">
+                        <input type="range" id="restaurantWeight" min="1" max="10" value="5">
+                        <span class="weight-value" id="weightValue">5</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Catégorie</label>
+                    <select id="restaurantCategory" required>
+                        <option value="fast">Rapide ⚡ (service rapide)</option>
+                        <option value="slow">Lent 🍽️ (prendre son temps)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Image/GIF (facultatif) 🎨</label>
+                    <input type="url" id="restaurantImage" placeholder="https://exemple.com/image.gif">
+                    <small style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
+                        URL d'une image ou GIF à afficher quand ce restaurant est choisi
+                    </small>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn btn-primary">Enregistrer</button>
+                    <button type="button" class="modal-btn btn-secondary" id="cancelBtn">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Overlay -->
+    <div class="image-overlay" id="imageOverlay">
+        <button class="image-overlay-close" onclick="closeImageOverlay()">✕</button>
+        <div class="image-overlay-content">
+            <div class="image-overlay-text" id="overlayText"></div>
+            <img id="overlayImage" src="" alt="Restaurant">
+        </div>
+    </div>
+
+    <script>
+        // Data management
+        let restaurants = [];
+        let currentFilter = 'all';
+        let isSpinning = false;
+        let editingIndex = null;
+
+        // Canvas setup
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        let rotation = 0;
+
+        // Colors
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'
+        ];
+
+        // Sound management
+        let soundEnabled = true;
+        let audioContext = null;
+        let tickInterval = null;
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+
+        function playTickSound() {
+            if (!soundEnabled) return;
+            try {
+                const ctx = initAudioContext();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+                
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + 0.05);
+            } catch (error) {
+                console.error('Erreur son:', error);
+            }
+        }
+
+        function playCelebrationSound() {
+            if (!soundEnabled) return;
+            try {
+                const ctx = initAudioContext();
+                
+                // Jouer 3 notes joyeuses
+                const notes = [523.25, 659.25, 783.99]; // Do, Mi, Sol
+                notes.forEach((freq, index) => {
+                    const oscillator = ctx.createOscillator();
+                    const gainNode = ctx.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(ctx.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    const startTime = ctx.currentTime + index * 0.15;
+                    gainNode.gain.setValueAtTime(0.15, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.3);
+                });
+            } catch (error) {
+                console.error('Erreur son célébration:', error);
+            }
+        }
+
+        function startWheelSound(duration) {
+            if (!soundEnabled) return;
+            
+            const startTime = Date.now();
+            let lastTickTime = 0;
+            
+            function tick() {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+                
+                if (progress >= 1) {
+                    stopWheelSound();
+                    return;
+                }
+                
+                // Calculer le délai entre les tics (commence rapide, finit lent)
+                const minDelay = 30;
+                const maxDelay = 200;
+                const currentDelay = minDelay + (maxDelay - minDelay) * Math.pow(progress, 2);
+                
+                const now = Date.now();
+                if (now - lastTickTime >= currentDelay) {
+                    playTickSound();
+                    lastTickTime = now;
+                }
+                
+                tickInterval = requestAnimationFrame(tick);
+            }
+            
+            tick();
+        }
+
+        function stopWheelSound() {
+            if (tickInterval) {
+                cancelAnimationFrame(tickInterval);
+                tickInterval = null;
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            if (soundEnabled) {
+                btn.textContent = '🔊';
+                btn.classList.remove('muted');
+            } else {
+                btn.textContent = '🔇';
+                btn.classList.add('muted');
+            }
+            localStorage.setItem('soundEnabled', soundEnabled);
+        }
+
+        function loadSoundPreference() {
+            const saved = localStorage.getItem('soundEnabled');
+            if (saved !== null) {
+                soundEnabled = saved === 'true';
+                const btn = document.getElementById('soundToggle');
+                if (!soundEnabled) {
+                    btn.textContent = '🔇';
+                    btn.classList.add('muted');
+                }
+            }
+        }
+
+        // Load data
+        function loadRestaurants() {
+            const saved = localStorage.getItem('restaurants');
+            if (saved) {
+                restaurants = JSON.parse(saved);
+                // Migration: ajouter le champ image si manquant
+                restaurants = restaurants.map(r => ({
+                    name: r.name || '',
+                    weight: r.weight || 5,
+                    category: r.category || 'fast',
+                    image: r.image || ''
+                }));
+                saveRestaurants(); // Sauvegarder avec les nouveaux champs
+            } else {
+                // Exemples par défaut
+                restaurants = [
+                    { name: 'Le Bistrot', weight: 7, category: 'fast', image: '' },
+                    { name: 'Sushi Zen', weight: 8, category: 'slow', image: '' },
+                    { name: 'Burger King', weight: 5, category: 'fast', image: '' },
+                    { name: 'La Trattoria', weight: 6, category: 'slow', image: '' },
+                    { name: 'Kebab Express', weight: 4, category: 'fast', image: '' }
+                ];
+                saveRestaurants();
+            }
+        }
+
+        function saveRestaurants() {
+            localStorage.setItem('restaurants', JSON.stringify(restaurants));
+        }
+
+        function getFilteredRestaurants() {
+            if (currentFilter === 'all') return restaurants;
+            return restaurants.filter(r => r.category === currentFilter);
+        }
+
+        // Draw wheel
+        function drawWheel() {
+            try {
+                const filtered = getFilteredRestaurants();
+                if (filtered.length === 0) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#999';
+                    ctx.font = '20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Aucun restaurant', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = 230;
+
+                // Calculate total weight
+                const totalWeight = filtered.reduce((sum, r) => sum + r.weight, 0);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(rotation);
+
+                let currentAngle = 0;
+
+                filtered.forEach((restaurant, index) => {
+                    const sliceAngle = (restaurant.weight / totalWeight) * Math.PI * 2;
+                    
+                    // Draw slice
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.arc(0, 0, radius, currentAngle, currentAngle + sliceAngle);
+                    ctx.closePath();
+                    ctx.fillStyle = colors[index % colors.length];
+                    ctx.fill();
+                    
+                    // Draw border
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Draw text
+                    ctx.save();
+                    ctx.rotate(currentAngle + sliceAngle / 2);
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.shadowBlur = 4;
+                    
+                    const text = restaurant.name || 'Sans nom';
+                    const maxWidth = radius - 40;
+                    ctx.fillText(text, radius / 1.5, 8, maxWidth);
+                    ctx.restore();
+
+                    currentAngle += sliceAngle;
+                });
+
+                ctx.restore();
+            } catch (error) {
+                console.error('Erreur dans drawWheel:', error);
+            }
+        }
+
+        // Spin wheel
+        function spinWheel() {
+            try {
+                const filtered = getFilteredRestaurants();
+                if (filtered.length === 0 || isSpinning) return;
+
+                isSpinning = true;
+                document.getElementById('spinBtn').disabled = true;
+                document.getElementById('resultDisplay').classList.remove('show');
+
+                // Calculate winner based on weights
+                const totalWeight = filtered.reduce((sum, r) => sum + r.weight, 0);
+                const random = Math.random() * totalWeight;
+                let cumulative = 0;
+                let winnerIndex = 0;
+
+                for (let i = 0; i < filtered.length; i++) {
+                    cumulative += filtered[i].weight;
+                    if (random <= cumulative) {
+                        winnerIndex = i;
+                        break;
+                    }
+                }
+
+                // Calculate the angle of the center of the winning segment (in the wheel's coordinate system)
+                let targetAngle = 0;
+                for (let i = 0; i < winnerIndex; i++) {
+                    const weight = filtered[i].weight / totalWeight;
+                    targetAngle += weight * Math.PI * 2;
+                }
+                // Add half of winner's slice to point to its center
+                const winnerWeight = filtered[winnerIndex].weight / totalWeight;
+                targetAngle += (winnerWeight * Math.PI * 2) / 2;
+
+                // The arrow points down from the top of the wheel
+                // In canvas coordinates: top = -π/2 (or 3π/2)
+                const arrowPosition = -Math.PI / 2;
+                
+                // Current position of the winning segment in screen space
+                let currentWinnerPosition = targetAngle + rotation;
+                
+                // Normalize to 0-2π
+                currentWinnerPosition = ((currentWinnerPosition % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                let normalizedArrow = ((arrowPosition % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                
+                // Calculate how much we need to rotate to align winner with arrow
+                let rotationNeeded = normalizedArrow - currentWinnerPosition;
+                if (rotationNeeded < 0) rotationNeeded += Math.PI * 2;
+                
+                // Add 5 full spins for effect
+                const spins = 5;
+                rotationNeeded += spins * Math.PI * 2;
+                
+                const duration = 4000;
+                const startTime = Date.now();
+                const startRotation = rotation;
+                const totalRotation = rotationNeeded;
+
+                // Démarrer le son de roue
+                startWheelSound(duration);
+
+                function animate() {
+                    try {
+                        const now = Date.now();
+                        const elapsed = now - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        // Easing function
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        
+                        rotation = startRotation + totalRotation * easeOut;
+                        drawWheel();
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            isSpinning = false;
+                            document.getElementById('spinBtn').disabled = false;
+                            showResult(filtered[winnerIndex]);
+                            createConfetti();
+                        }
+                    } catch (error) {
+                        console.error('Erreur dans animate:', error);
+                        stopWheelSound();
+                        isSpinning = false;
+                        document.getElementById('spinBtn').disabled = false;
+                    }
+                }
+
+                animate();
+            } catch (error) {
+                console.error('Erreur dans spinWheel:', error);
+                stopWheelSound();
+                isSpinning = false;
+                document.getElementById('spinBtn').disabled = false;
+            }
+        }
+
+        function showResult(restaurant) {
+            try {
+                const resultDiv = document.getElementById('resultDisplay');
+                resultDiv.innerHTML = `🎉 ${restaurant.name} 🎉`;
+                resultDiv.classList.add('show');
+
+                // Jouer le son de célébration
+                playCelebrationSound();
+
+                // Afficher l'image/GIF si disponible
+                if (restaurant.image && restaurant.image.trim() !== '') {
+                    setTimeout(() => {
+                        const overlay = document.getElementById('imageOverlay');
+                        const overlayText = document.getElementById('overlayText');
+                        const overlayImage = document.getElementById('overlayImage');
+                        
+                        overlayText.textContent = `🎉 ${restaurant.name} 🎉`;
+                        overlayImage.src = restaurant.image;
+                        overlay.classList.add('show');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Erreur dans showResult:', error);
+            }
+        }
+
+        function closeImageOverlay() {
+            try {
+                document.getElementById('imageOverlay').classList.remove('show');
+            } catch (error) {
+                console.error('Erreur dans closeImageOverlay:', error);
+            }
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.top = '-10px';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        // UI Management
+        function renderRestaurantList() {
+            try {
+                const list = document.getElementById('restaurantList');
+                
+                if (restaurants.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🍽️</div>
+                            <p>Aucun restaurant pour le moment</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = restaurants.map((r, index) => {
+                    const name = r.name || 'Sans nom';
+                    const weight = r.weight || 5;
+                    const category = r.category || 'fast';
+                    const hasImage = r.image && r.image.trim() !== '';
+                    
+                    return `
+                    <div class="restaurant-item">
+                        <div class="restaurant-info">
+                            <div class="restaurant-name">${name} ${hasImage ? '🖼️' : ''}</div>
+                            <div class="restaurant-details">
+                                <span class="restaurant-badge badge-${category}">
+                                    ${category === 'fast' ? '⚡ Rapide' : '🍽️ Lent'}
+                                </span>
+                                <span>Poids: ${weight}/10</span>
+                            </div>
+                        </div>
+                        <div class="restaurant-actions">
+                            <button class="btn-small btn-edit" onclick="editRestaurant(${index})">✏️</button>
+                            <button class="btn-small btn-delete" onclick="deleteRestaurant(${index})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            } catch (error) {
+                console.error('Erreur dans renderRestaurantList:', error);
+            }
+        }
+
+        function showModal(isEdit = false, index = null) {
+            try {
+                const modal = document.getElementById('modal');
+                const form = document.getElementById('restaurantForm');
+                const title = document.getElementById('modalTitle');
+                
+                editingIndex = index;
+                title.textContent = isEdit ? 'Modifier le restaurant' : 'Ajouter un restaurant';
+                
+                if (isEdit && index !== null && restaurants[index]) {
+                    const restaurant = restaurants[index];
+                    document.getElementById('restaurantName').value = restaurant.name || '';
+                    document.getElementById('restaurantWeight').value = restaurant.weight || 5;
+                    document.getElementById('weightValue').textContent = restaurant.weight || 5;
+                    document.getElementById('restaurantCategory').value = restaurant.category || 'fast';
+                    document.getElementById('restaurantImage').value = restaurant.image || '';
+                } else {
+                    form.reset();
+                    document.getElementById('weightValue').textContent = '5';
+                }
+                
+                modal.classList.add('show');
+            } catch (error) {
+                console.error('Erreur dans showModal:', error);
+            }
+        }
+
+        function hideModal() {
+            document.getElementById('modal').classList.remove('show');
+            editingIndex = null;
+        }
+
+        function editRestaurant(index) {
+            try {
+                if (index >= 0 && index < restaurants.length) {
+                    showModal(true, index);
+                }
+            } catch (error) {
+                console.error('Erreur dans editRestaurant:', error);
+            }
+        }
+
+        function deleteRestaurant(index) {
+            try {
+                if (index >= 0 && index < restaurants.length && confirm('Supprimer ce restaurant ?')) {
+                    restaurants.splice(index, 1);
+                    saveRestaurants();
+                    renderRestaurantList();
+                    drawWheel();
+                }
+            } catch (error) {
+                console.error('Erreur dans deleteRestaurant:', error);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('spinBtn').addEventListener('click', spinWheel);
+        document.getElementById('addBtn').addEventListener('click', () => showModal(false));
+        document.getElementById('cancelBtn').addEventListener('click', hideModal);
+
+        document.getElementById('restaurantWeight').addEventListener('input', (e) => {
+            document.getElementById('weightValue').textContent = e.target.value;
+        });
+
+        document.getElementById('restaurantForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const restaurant = {
+                name: document.getElementById('restaurantName').value,
+                weight: parseInt(document.getElementById('restaurantWeight').value),
+                category: document.getElementById('restaurantCategory').value,
+                image: document.getElementById('restaurantImage').value || ''
+            };
+
+            if (editingIndex !== null) {
+                restaurants[editingIndex] = restaurant;
+            } else {
+                restaurants.push(restaurant);
+            }
+
+            saveRestaurants();
+            renderRestaurantList();
+            drawWheel();
+            hideModal();
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.filter;
+                drawWheel();
+            });
+        });
+
+        // Click on overlay to close it
+        document.getElementById('imageOverlay').addEventListener('click', function(e) {
+            if (e.target.id === 'imageOverlay') {
+                closeImageOverlay();
+            }
+        });
+
+        // Click on wheel to spin
+        canvas.addEventListener('click', spinWheel);
+
+        // Sound toggle
+        document.getElementById('soundToggle').addEventListener('click', toggleSound);
+
+        // Initialize
+        loadSoundPreference();
+        loadRestaurants();
+        renderRestaurantList();
+        drawWheel();
+    </script>
+</body>
+</html>
