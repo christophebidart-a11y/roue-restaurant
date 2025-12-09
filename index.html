@@ -24,7 +24,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             width: 100%;
         }
 
@@ -34,6 +34,83 @@
             margin-bottom: 30px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 968px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* People Selection */
+        .people-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .people-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .people-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .person-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .person-item:hover {
+            background: #f8f9fa;
+        }
+
+        .person-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .person-item label {
+            flex: 1;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .select-all-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .select-all-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
         }
 
         .wheel-section {
@@ -53,6 +130,7 @@
             align-items: center;
             justify-content: center;
             gap: 15px;
+            flex-wrap: wrap;
         }
 
         .filter-toggle {
@@ -203,6 +281,20 @@
             opacity: 1;
         }
 
+        .warning-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .warning-message.show {
+            display: block;
+        }
+
         .confetti {
             position: fixed;
             width: 10px;
@@ -308,27 +400,41 @@
     <div class="container">
         <h1>🎡 Roue des Restaurants</h1>
         
-        <div class="wheel-section">
-            <div class="filter-section">
-                <div class="filter-toggle">
-                    <button class="filter-btn active" data-filter="all">Tous</button>
-                    <button class="filter-btn" data-filter="fast">Rapide ⚡</button>
-                    <button class="filter-btn" data-filter="slow">Lent 🍽️</button>
+        <div class="main-layout">
+            <!-- People Selection -->
+            <div class="people-section">
+                <h3>👥 Qui mange ?</h3>
+                <button class="select-all-btn" onclick="toggleSelectAll()">Tout sélectionner</button>
+                <div class="people-list" id="peopleList"></div>
+            </div>
+
+            <!-- Wheel Section -->
+            <div class="wheel-section">
+                <div class="filter-section">
+                    <div class="filter-toggle">
+                        <button class="filter-btn active" data-filter="all">Tous</button>
+                        <button class="filter-btn" data-filter="fast">Rapide ⚡</button>
+                        <button class="filter-btn" data-filter="slow">Lent 🍽️</button>
+                    </div>
+                    <button class="sound-toggle" id="soundToggle" title="Activer/Désactiver les sons">
+                        🔊
+                    </button>
                 </div>
-                <button class="sound-toggle" id="soundToggle" title="Activer/Désactiver les sons">
-                    🔊
-                </button>
-            </div>
 
-            <div class="wheel-container">
-                <div class="wheel-pointer"></div>
-                <canvas id="wheelCanvas" width="500" height="500"></canvas>
-                <div class="wheel-center">SPIN</div>
-            </div>
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                    <div class="wheel-center">SPIN</div>
+                </div>
 
-            <button class="spin-btn" id="spinBtn">🎲 Lancer la roue !</button>
-            
-            <div class="result-display" id="resultDisplay"></div>
+                <button class="spin-btn" id="spinBtn">🎲 Lancer la roue !</button>
+                
+                <div class="warning-message" id="warningMessage">
+                    ⚠️ Sélectionne au moins une personne !
+                </div>
+                
+                <div class="result-display" id="resultDisplay"></div>
+            </div>
         </div>
     </div>
 
@@ -342,35 +448,38 @@
     </div>
 
     <script>
-        // Data - Liste des restaurants
-        const restaurants = [
-            { "name": "Woodblock", "weight": 6, "category": "fast", "image": "https://media.tenor.com/yf3ROvNAOpAAAAAM/hhgf.gif" },
-            { "name": "NAZIK", "weight": 6, "category": "fast", "image": "" },
-            { "name": "Tajinier", "weight": 4, "category": "slow", "image": "" },
-            { "name": "Eurasie", "weight": 7, "category": "fast", "image": "" },
-            { "name": "Mimosa", "weight": 7, "category": "fast", "image": "" },
-            { "name": "KFC", "weight": 5, "category": "fast", "image": "" },
-            { "name": "Chourrasco", "weight": 6, "category": "fast", "image": "" },
-            { "name": "Umiyama", "weight": 8, "category": "fast", "image": "" },
-            { "name": "Kobbo", "weight": 7, "category": "slow", "image": "" },
-            { "name": "Brasserie du M", "weight": 8, "category": "slow", "image": "" },
-            { "name": "Quick", "weight": 5, "category": "fast", "image": "" },
-            { "name": "Burger King", "weight": 6, "category": "fast", "image": "" },
-            { "name": "Brasserie Le Cap", "weight": 6, "category": "slow", "image": "" },
-            { "name": "Dozo", "weight": 9, "category": "slow", "image": "" },
-            { "name": "Au bureau", "weight": 6, "category": "fast", "image": "" },
-            { "name": "Oceanic", "weight": 6, "category": "slow", "image": "" },
-            { "name": "Ciao A Tutti", "weight": 8, "category": "slow", "image": "" },
-            { "name": "Bec fin", "weight": 5, "category": "slow", "image": "" },
-            { "name": "Flunch", "weight": 2, "category": "slow", "image": "" },
-            { "name": "Burger Decat", "weight": 6, "category": "fast", "image": "" },
-            { "name": "Nobi Nobi", "weight": 6, "category": "fast", "image": "" },
-            { "name": "Crepes carrouf", "weight": 4, "category": "slow", "image": "" },
-            { "name": "Le camion du jour Cultura", "weight": 3, "category": "fast", "image": "" }
+        // Data - Base restaurants
+        const baseRestaurants = [
+            { "name": "Woodblock", "category": "fast", "image": "https://media.tenor.com/yf3ROvNAOpAAAAAM/hhgf.gif" },
+            { "name": "NAZIK", "category": "fast", "image": "" },
+            { "name": "Tajinier", "category": "slow", "image": "" },
+            { "name": "Eurasie", "category": "fast", "image": "" },
+            { "name": "Mimosa", "category": "fast", "image": "" },
+            { "name": "KFC", "category": "fast", "image": "" },
+            { "name": "Chourrasco", "category": "fast", "image": "" },
+            { "name": "Umiyama", "category": "fast", "image": "" },
+            { "name": "Kobbo", "category": "slow", "image": "" },
+            { "name": "Brasserie du M", "category": "slow", "image": "" },
+            { "name": "Quick", "category": "fast", "image": "" },
+            { "name": "Burger King", "category": "fast", "image": "" },
+            { "name": "Brasserie Le Cap", "category": "slow", "image": "" },
+            { "name": "Dozo", "category": "slow", "image": "" },
+            { "name": "Au bureau", "category": "fast", "image": "" },
+            { "name": "Oceanic", "category": "slow", "image": "" },
+            { "name": "Ciao A Tutti", "category": "slow", "image": "" },
+            { "name": "Bec fin", "category": "slow", "image": "" },
+            { "name": "Flunch", "category": "slow", "image": "" },
+            { "name": "Burger Decat", "category": "fast", "image": "" },
+            { "name": "Nobi Nobi", "category": "fast", "image": "" },
+            { "name": "Crepes carrouf", "category": "slow", "image": "" },
+            { "name": "Le camion du jour Cultura", "category": "fast", "image": "" }
         ];
 
+        let ratingsData = null;
+        let restaurants = []; // Will be computed based on selected people
         let currentFilter = 'all';
         let isSpinning = false;
+        let selectedPeople = new Set();
 
         // Canvas setup
         const canvas = document.getElementById('wheelCanvas');
@@ -389,6 +498,120 @@
         let soundEnabled = true;
         let audioContext = null;
         let tickInterval = null;
+
+        // Load ratings data
+        async function loadRatings() {
+            try {
+                const response = await fetch('ratings.json');
+                ratingsData = await response.json();
+                
+                // Initialize people list
+                renderPeopleList();
+                
+                // Select all by default
+                selectAllPeople();
+                
+                // Calculate initial weights
+                updateRestaurantWeights();
+                
+                drawWheel();
+            } catch (error) {
+                console.error('Erreur chargement ratings:', error);
+                // Fallback to default weights
+                restaurants = baseRestaurants.map(r => ({ ...r, weight: 5 }));
+                renderPeopleList();
+                drawWheel();
+            }
+        }
+
+        function renderPeopleList() {
+            const peopleList = document.getElementById('peopleList');
+            peopleList.innerHTML = '';
+            
+            const people = ratingsData ? ratingsData.people : [];
+            
+            people.forEach(person => {
+                const div = document.createElement('div');
+                div.className = 'person-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `person-${person}`;
+                checkbox.value = person;
+                checkbox.addEventListener('change', onPersonChange);
+                
+                const label = document.createElement('label');
+                label.htmlFor = `person-${person}`;
+                label.textContent = person;
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                peopleList.appendChild(div);
+            });
+        }
+
+        function onPersonChange(e) {
+            if (e.target.checked) {
+                selectedPeople.add(e.target.value);
+            } else {
+                selectedPeople.delete(e.target.value);
+            }
+            
+            updateRestaurantWeights();
+            drawWheel();
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('#peopleList input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+                if (cb.checked) {
+                    selectedPeople.add(cb.value);
+                } else {
+                    selectedPeople.delete(cb.value);
+                }
+            });
+            
+            updateRestaurantWeights();
+            drawWheel();
+        }
+
+        function selectAllPeople() {
+            const checkboxes = document.querySelectorAll('#peopleList input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = true;
+                selectedPeople.add(cb.value);
+            });
+        }
+
+        function updateRestaurantWeights() {
+            restaurants = baseRestaurants.map(restaurant => {
+                let weight = 5; // Default
+                
+                if (ratingsData && selectedPeople.size > 0) {
+                    let sum = 0;
+                    let count = 0;
+                    
+                    selectedPeople.forEach(person => {
+                        if (ratingsData.ratings[person] && ratingsData.ratings[person][restaurant.name] !== undefined) {
+                            sum += ratingsData.ratings[person][restaurant.name];
+                            count++;
+                        }
+                    });
+                    
+                    if (count > 0) {
+                        weight = Math.round((sum / count) * 10) / 10; // Round to 1 decimal
+                    }
+                }
+                
+                return {
+                    ...restaurant,
+                    weight: weight
+                };
+            });
+        }
 
         function initAudioContext() {
             if (!audioContext) {
@@ -424,9 +647,7 @@
             if (!soundEnabled) return;
             try {
                 const ctx = initAudioContext();
-                
-                // Jouer 3 notes joyeuses
-                const notes = [523.25, 659.25, 783.99]; // Do, Mi, Sol
+                const notes = [523.25, 659.25, 783.99];
                 notes.forEach((freq, index) => {
                     const oscillator = ctx.createOscillator();
                     const gainNode = ctx.createGain();
@@ -464,7 +685,6 @@
                     return;
                 }
                 
-                // Calculer le délai entre les tics (commence rapide, finit lent)
                 const minDelay = 30;
                 const maxDelay = 200;
                 const currentDelay = minDelay + (maxDelay - minDelay) * Math.pow(progress, 2);
@@ -518,7 +738,6 @@
             return restaurants.filter(r => r.category === currentFilter);
         }
 
-        // Draw wheel
         function drawWheel() {
             try {
                 const filtered = getFilteredRestaurants();
@@ -537,7 +756,6 @@
                 const centerY = canvas.height / 2;
                 const radius = 230;
 
-                // Calculate total weight
                 const totalWeight = filtered.reduce((sum, r) => sum + r.weight, 0);
                 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -550,7 +768,6 @@
                 filtered.forEach((restaurant, index) => {
                     const sliceAngle = (restaurant.weight / totalWeight) * Math.PI * 2;
                     
-                    // Draw slice
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.arc(0, 0, radius, currentAngle, currentAngle + sliceAngle);
@@ -558,12 +775,10 @@
                     ctx.fillStyle = colors[index % colors.length];
                     ctx.fill();
                     
-                    // Draw border
                     ctx.strokeStyle = 'white';
                     ctx.lineWidth = 3;
                     ctx.stroke();
 
-                    // Draw text
                     ctx.save();
                     ctx.rotate(currentAngle + sliceAngle / 2);
                     ctx.textAlign = 'center';
@@ -586,9 +801,18 @@
             }
         }
 
-        // Spin wheel
         function spinWheel() {
             try {
+                // Check if at least one person is selected
+                if (selectedPeople.size === 0) {
+                    const warning = document.getElementById('warningMessage');
+                    warning.classList.add('show');
+                    setTimeout(() => {
+                        warning.classList.remove('show');
+                    }, 3000);
+                    return;
+                }
+
                 const filtered = getFilteredRestaurants();
                 if (filtered.length === 0 || isSpinning) return;
 
@@ -596,7 +820,6 @@
                 document.getElementById('spinBtn').disabled = true;
                 document.getElementById('resultDisplay').classList.remove('show');
 
-                // Calculate winner based on weights
                 const totalWeight = filtered.reduce((sum, r) => sum + r.weight, 0);
                 const random = Math.random() * totalWeight;
                 let cumulative = 0;
@@ -610,32 +833,22 @@
                     }
                 }
 
-                // Calculate the angle of the center of the winning segment (in the wheel's coordinate system)
                 let targetAngle = 0;
                 for (let i = 0; i < winnerIndex; i++) {
                     const weight = filtered[i].weight / totalWeight;
                     targetAngle += weight * Math.PI * 2;
                 }
-                // Add half of winner's slice to point to its center
                 const winnerWeight = filtered[winnerIndex].weight / totalWeight;
                 targetAngle += (winnerWeight * Math.PI * 2) / 2;
 
-                // The arrow points down from the top of the wheel
-                // In canvas coordinates: top = -π/2 (or 3π/2)
                 const arrowPosition = -Math.PI / 2;
-                
-                // Current position of the winning segment in screen space
                 let currentWinnerPosition = targetAngle + rotation;
-                
-                // Normalize to 0-2π
                 currentWinnerPosition = ((currentWinnerPosition % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
                 let normalizedArrow = ((arrowPosition % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
                 
-                // Calculate how much we need to rotate to align winner with arrow
                 let rotationNeeded = normalizedArrow - currentWinnerPosition;
                 if (rotationNeeded < 0) rotationNeeded += Math.PI * 2;
                 
-                // Add 5 full spins for effect
                 const spins = 5;
                 rotationNeeded += spins * Math.PI * 2;
                 
@@ -644,7 +857,6 @@
                 const startRotation = rotation;
                 const totalRotation = rotationNeeded;
 
-                // Démarrer le son de roue
                 startWheelSound(duration);
 
                 function animate() {
@@ -653,7 +865,6 @@
                         const elapsed = now - startTime;
                         const progress = Math.min(elapsed / duration, 1);
                         
-                        // Easing function
                         const easeOut = 1 - Math.pow(1 - progress, 3);
                         
                         rotation = startRotation + totalRotation * easeOut;
@@ -690,10 +901,8 @@
                 resultDiv.innerHTML = `🎉 ${restaurant.name} 🎉`;
                 resultDiv.classList.add('show');
 
-                // Jouer le son de célébration
                 playCelebrationSound();
 
-                // Afficher l'image/GIF si disponible
                 if (restaurant.image && restaurant.image.trim() !== '') {
                     setTimeout(() => {
                         const overlay = document.getElementById('imageOverlay');
@@ -736,7 +945,6 @@
         // Event listeners
         document.getElementById('spinBtn').addEventListener('click', spinWheel);
 
-        // Filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -746,22 +954,19 @@
             });
         });
 
-        // Click on overlay to close it
         document.getElementById('imageOverlay').addEventListener('click', function(e) {
             if (e.target.id === 'imageOverlay') {
                 closeImageOverlay();
             }
         });
 
-        // Click on wheel to spin
         canvas.addEventListener('click', spinWheel);
 
-        // Sound toggle
         document.getElementById('soundToggle').addEventListener('click', toggleSound);
 
         // Initialize
         loadSoundPreference();
-        drawWheel();
+        loadRatings();
     </script>
 </body>
 </html>

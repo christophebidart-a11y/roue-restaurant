@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Admin - Gestion des Notes</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Login Form */
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 400px;
+            margin: 100px auto;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .error-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.show {
+            display: block;
+        }
+
+        .admin-header {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-title {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #51cf66;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .ratings-table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow-x: auto;
+        }
+
+        .ratings-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        .ratings-table th,
+        .ratings-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .ratings-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .ratings-table th:first-child {
+            text-align: left;
+            min-width: 150px;
+        }
+
+        .ratings-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+            background: #f8f9fa;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        .ratings-table input[type="number"] {
+            width: 60px;
+            padding: 6px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .ratings-table input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .ratings-table tr:hover td {
+            background-color: #f8f9fa;
+        }
+
+        .success-message {
+            background: #51cf66;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Administration des Notes</h1>
+
+        <!-- Login Form -->
+        <div class="login-box" id="loginBox">
+            <h2>🔐 Connexion</h2>
+            <div class="error-message" id="errorMessage">
+                Identifiants incorrects
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Nom d'utilisateur</label>
+                    <input type="text" id="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-login">Se connecter</button>
+            </form>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel" id="adminPanel">
+            <div class="admin-header">
+                <div class="admin-title">Gestion des notes restaurants</div>
+                <div class="admin-actions">
+                    <button class="btn btn-primary" onclick="loadRatingsFile()">📁 Charger ratings.json</button>
+                    <button class="btn btn-success" onclick="downloadRatings()">💾 Télécharger ratings.json</button>
+                    <button class="btn btn-danger" onclick="logout()">🚪 Déconnexion</button>
+                </div>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                Fichier chargé avec succès !
+            </div>
+
+            <div class="ratings-table-container">
+                <table class="ratings-table" id="ratingsTable">
+                    <thead>
+                        <tr>
+                            <th>Restaurant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ratingsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json">
+
+    <script>
+        // Credentials
+        const ADMIN_USERNAME = 'kurisu';
+        const ADMIN_PASSWORD = 'kurisu';
+
+        // Data
+        let ratingsData = null;
+        const restaurants = [
+            "Woodblock", "NAZIK", "Tajinier", "Eurasie", "Mimosa", "KFC", 
+            "Chourrasco", "Umiyama", "Kobbo", "Brasserie du M", "Quick", 
+            "Burger King", "Brasserie Le Cap", "Dozo", "Au bureau", "Oceanic", 
+            "Ciao A Tutti", "Bec fin", "Flunch", "Burger Decat", "Nobi Nobi", 
+            "Crepes carrouf", "Le camion du jour Cultura"
+        ];
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('adminPanel').classList.add('show');
+                loadDefaultRatings();
+            } else {
+                document.getElementById('errorMessage').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('errorMessage').classList.remove('show');
+                }, 3000);
+            }
+        });
+
+        function logout() {
+            document.getElementById('loginBox').style.display = 'block';
+            document.getElementById('adminPanel').classList.remove('show');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function loadDefaultRatings() {
+            // Initialize with default ratings (all 5)
+            ratingsData = {
+                people: ["Chris", "Régis", "Dimitri", "Pierrick", "Romain", "Maurick", "Jérôme", "Safouane", "Nabil", "Emmanuel"],
+                ratings: {}
+            };
+
+            ratingsData.people.forEach(person => {
+                ratingsData.ratings[person] = {};
+                restaurants.forEach(restaurant => {
+                    ratingsData.ratings[person][restaurant] = 5;
+                });
+            });
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const thead = document.querySelector('#ratingsTable thead tr');
+            const tbody = document.getElementById('ratingsTableBody');
+
+            // Clear existing content
+            thead.innerHTML = '<th>Restaurant</th>';
+            tbody.innerHTML = '';
+
+            // Add person columns
+            ratingsData.people.forEach(person => {
+                const th = document.createElement('th');
+                th.textContent = person;
+                thead.appendChild(th);
+            });
+
+            // Add restaurant rows
+            restaurants.forEach(restaurant => {
+                const tr = document.createElement('tr');
+                
+                // Restaurant name
+                const tdName = document.createElement('td');
+                tdName.textContent = restaurant;
+                tr.appendChild(tdName);
+
+                // Rating inputs for each person
+                ratingsData.people.forEach(person => {
+                    const td = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '1';
+                    input.max = '10';
+                    input.value = ratingsData.ratings[person][restaurant] || 5;
+                    input.addEventListener('change', (e) => {
+                        let value = parseInt(e.target.value);
+                        if (value < 1) value = 1;
+                        if (value > 10) value = 10;
+                        e.target.value = value;
+                        ratingsData.ratings[person][restaurant] = value;
+                    });
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function downloadRatings() {
+            const dataStr = JSON.stringify(ratingsData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ratings.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadRatingsFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    
+                    // Validate structure
+                    if (!data.people || !data.ratings) {
+                        alert('Format de fichier invalide');
+                        return;
+                    }
+
+                    ratingsData = data;
+                    renderTable();
+
+                    // Show success message
+                    const successMsg = document.getElementById('successMessage');
+                    successMsg.classList.add('show');
+                    setTimeout(() => {
+                        successMsg.classList.remove('show');
+                    }, 3000);
+                } catch (error) {
+                    alert('Erreur lors de la lecture du fichier: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+
+            // Reset file input
+            e.target.value = '';
+        });
+    </script>
+</body>
+</html>
